@@ -4,16 +4,28 @@ import { organization } from "better-auth/plugins";
 import { describe, expect, it } from "vitest";
 import { createSchema } from "./create-schema.js";
 
+const tableBlock = (code: string, table: string): string => {
+  const marker = `  ${table}: defineTable({`;
+  const start = code.indexOf(marker);
+  expect(start, `table "${table}"`).toBeGreaterThanOrEqual(0);
+  const searchFrom = start + marker.length;
+  const nextTable = code.slice(searchFrom).search(/\n  \w+: defineTable\(\{/);
+  const end =
+    nextTable === -1 ? code.indexOf("\n};", start) : searchFrom + nextTable;
+  expect(end, `end of table "${table}"`).toBeGreaterThan(start);
+  return code.slice(start, end);
+};
+
 describe("createSchema", () => {
   it("emits v.id() for core FK fields", async () => {
     const tables = getAuthTables({});
     const { code } = await createSchema({ tables, file: "generatedSchema.ts" });
 
-    expect(code).toMatch(/session: defineTable[\s\S]*userId: v\.id\("user"\)/);
-    expect(code).toMatch(/account: defineTable[\s\S]*userId: v\.id\("user"\)/);
-    expect(code).toContain("accountId: v.string()");
-    expect(code).toContain("providerId: v.string()");
-    expect(code).toContain("token: v.string()");
+    expect(tableBlock(code, "session")).toContain('userId: v.id("user")');
+    expect(tableBlock(code, "account")).toContain('userId: v.id("user")');
+    expect(tableBlock(code, "account")).toContain("accountId: v.string()");
+    expect(tableBlock(code, "account")).toContain("providerId: v.string()");
+    expect(tableBlock(code, "session")).toContain("token: v.string()");
   });
 
   it("keeps user.userId as v.string() without references metadata", async () => {
@@ -26,8 +38,8 @@ describe("createSchema", () => {
     });
     const { code } = await createSchema({ tables, file: "generatedSchema.ts" });
 
-    expect(code).toMatch(
-      /user: defineTable[\s\S]*userId: v\.optional\(v\.union\(v\.null\(\), v\.string\(\)\)\)/
+    expect(tableBlock(code, "user")).toContain(
+      "userId: v.optional(v.union(v.null(), v.string()))"
     );
   });
 
@@ -37,17 +49,15 @@ describe("createSchema", () => {
     });
     const { code } = await createSchema({ tables, file: "generatedSchema.ts" });
 
-    expect(code).toMatch(
-      /member: defineTable[\s\S]*organizationId: v\.id\("organization"\)/
+    expect(tableBlock(code, "member")).toContain(
+      'organizationId: v.id("organization")'
     );
-    expect(code).toMatch(/member: defineTable[\s\S]*userId: v\.id\("user"\)/);
-    expect(code).toMatch(
-      /invitation: defineTable[\s\S]*organizationId: v\.id\("organization"\)/
+    expect(tableBlock(code, "member")).toContain('userId: v.id("user")');
+    expect(tableBlock(code, "invitation")).toContain(
+      'organizationId: v.id("organization")'
     );
-    expect(code).toMatch(
-      /invitation: defineTable[\s\S]*inviterId: v\.id\("user"\)/
-    );
-    expect(code).toContain(
+    expect(tableBlock(code, "invitation")).toContain('inviterId: v.id("user")');
+    expect(tableBlock(code, "session")).toContain(
       "activeOrganizationId: v.optional(v.union(v.null(), v.string()))"
     );
   });
@@ -58,7 +68,8 @@ describe("createSchema", () => {
     });
     const { code } = await createSchema({ tables, file: "generatedSchema.ts" });
 
-    expect(code).toContain('userId: v.id("users")');
+    expect(tableBlock(code, "session")).toContain('userId: v.id("users")');
+    expect(tableBlock(code, "account")).toContain('userId: v.id("users")');
     expect(code).toMatch(/users: defineTable/);
   });
 
@@ -80,7 +91,7 @@ describe("createSchema", () => {
     const tables = getAuthTables({ plugins: [plugin] });
     const { code } = await createSchema({ tables, file: "generatedSchema.ts" });
 
-    expect(code).toContain("ownerId: v.string()");
+    expect(tableBlock(code, "widget")).toContain("ownerId: v.string()");
   });
 
   it("wraps optional FKs with v.optional(v.union(v.null(), v.id(...)))", async () => {
@@ -101,7 +112,7 @@ describe("createSchema", () => {
     const tables = getAuthTables({ plugins: [plugin] });
     const { code } = await createSchema({ tables, file: "generatedSchema.ts" });
 
-    expect(code).toContain(
+    expect(tableBlock(code, "optionalRef")).toContain(
       'userId: v.optional(v.union(v.null(), v.id("user")))'
     );
   });
