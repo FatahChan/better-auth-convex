@@ -9,7 +9,7 @@ const tableBlock = (code: string, table: string): string => {
   const start = code.indexOf(marker);
   expect(start, `table "${table}"`).toBeGreaterThanOrEqual(0);
   const searchFrom = start + marker.length;
-  const nextTable = code.slice(searchFrom).search(/\n  \w+: defineTable\(\{/);
+  const nextTable = code.slice(searchFrom).search(/\n {2}\w+: defineTable\(\{/);
   const end =
     nextTable === -1 ? code.indexOf("\n};", start) : searchFrom + nextTable;
   expect(end, `end of table "${table}"`).toBeGreaterThan(start);
