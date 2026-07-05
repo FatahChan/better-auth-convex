@@ -16,7 +16,6 @@ import {
   paginate,
   selectFields,
 } from "./adapter-utils.js";
-import { createTypedAdapter, type AdapterFunctions } from "./create-typed-adapter.js";
 import { getAuthTables } from "better-auth/db";
 import type { TableNames } from "../component/_generated/dataModel.js";
 import type { BetterAuthOptions } from "better-auth/minimal";
@@ -64,7 +63,7 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
   createAuthOptions: (ctx: any) => BetterAuthOptions
 ) => {
   const betterAuthSchema = getAuthTables(createAuthOptions({} as any));
-  const api = {
+  return {
     create: mutationGeneric({
       args: {
         input: v.union(
@@ -366,9 +365,5 @@ export const createApi = <Schema extends SchemaDefinition<any, any>>(
         };
       },
     }),
-  };
-  return {
-    ...api,
-    typed: createTypedAdapter(schema, api as unknown as AdapterFunctions),
   };
 };

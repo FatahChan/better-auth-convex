@@ -43,19 +43,10 @@ export const getUserByEmail = query({
 });
 ```
 
-For local install, `createApi` also returns a `typed` property alongside the
-Convex function exports:
-
-```ts title="convex/betterAuth/adapter.ts"
-const api = createApi(schema, createAuthOptions);
-export const { create, findOne, findMany, updateOne, updateMany, deleteOne, deleteMany } = api;
-export const typed = api.typed;
-```
-
 ## `createTypedAdapter()`
 
 Lower-level helper when you need to build a typed wrapper yourself (same
-methods as `typedAdapter`). `createClient` and `createApi` use this internally.
+methods as `typedAdapter`). `createClient` uses this internally.
 
 ```ts
 import { createTypedAdapter } from "@convex-dev/better-auth";
