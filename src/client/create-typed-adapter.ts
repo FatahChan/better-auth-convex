@@ -55,9 +55,9 @@ type MutationRunner = {
   ) => Promise<M["_returnType"]>;
 };
 
-type SortBy = { direction: "asc" | "desc"; field: string };
+export type SortBy = { direction: "asc" | "desc"; field: string };
 
-type BatchResult = {
+export type BatchResult = {
   count: number;
   ids: Array<unknown>;
   isDone: boolean;

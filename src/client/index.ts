@@ -9,6 +9,8 @@ import type { CreateAuth, EventFunction, GenericCtx } from "../utils/index.js";
 import type {
   AdapterFunctions,
   AdapterWhere,
+  BatchResult,
+  SortBy,
   TypedAdapter,
 } from "./create-typed-adapter.js";
 
@@ -23,6 +25,8 @@ export {
   createTypedAdapter,
   type AdapterFunctions,
   type AdapterWhere,
+  type BatchResult,
+  type SortBy,
   type CreateAuth,
   type EventFunction,
   type GenericCtx,
