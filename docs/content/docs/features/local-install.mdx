@@ -113,6 +113,8 @@ installed component.
     import schema from "./schema";
     import { createAuthOptions } from "../auth";
 
+    const api = createApi(schema, createAuthOptions);
+
     export const {
       create,
       findOne,
@@ -121,7 +123,10 @@ installed component.
       updateMany,
       deleteOne,
       deleteMany,
-    } = createApi(schema, createAuthOptions);
+    } = api;
+
+    // Typed wrapper for app-side adapter calls (see Usage below)
+    export const typed = api.typed;
     ```
 
   </div>
@@ -265,6 +270,36 @@ internet, even if they are public**.
   If a function in a component is called from outside the component, the return
   type won't be inferred unless a return validator is provided.
 </Callout>
+
+#### Querying with the typed adapter
+
+Don't call `ctx.runQuery(components.betterAuth.adapter.findOne, …)` directly
+from app code — return types won't narrow by `model`. Use
+`authComponent.typedAdapter` instead (requires your local schema in
+`createClient` config):
+
+```ts title="convex/users.ts"
+import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { authComponent } from "./auth";
+
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await authComponent.typedAdapter.findOne(ctx, {
+      model: "user",
+      where: [{ field: "email", value: args.email }],
+    });
+    // Doc<"user"> | null — inferred from model
+  },
+});
+```
+
+See [`typedAdapter`](/api/type-utilities#typedadapter-on-the-component-client) for
+setup and [`createTypedAdapter`](/api/type-utilities#createtypedadapter) for the
+lower-level API.
+
+#### Custom component functions
 
 ```ts title="convex/betterAuth/someFile.ts"
 import { query, mutation } from "./_generated/server";
