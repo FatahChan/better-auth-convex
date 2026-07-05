@@ -97,8 +97,8 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
       ctx: QueryRunner,
       args: {
         model: T;
-        where?: AdapterWhere[];
-        select?: string[];
+        where?: Array<AdapterWhere>;
+        select?: Array<string>;
         join?: unknown;
       }
     ): Promise<AdapterDoc<S, T> | null> {
@@ -109,8 +109,8 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
       ctx: QueryRunner,
       args: {
         model: T;
-        where?: AdapterWhere[];
-        select?: string[];
+        where?: Array<AdapterWhere>;
+        select?: Array<string>;
         limit?: number;
         sortBy?: SortBy;
         offset?: number;
@@ -127,7 +127,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
       ctx: MutationRunner,
       args: {
         input: { model: T; data: AdapterInsert<S, T> };
-        select?: string[];
+        select?: Array<string>;
         onCreateHandle?: string;
       }
     ): Promise<AdapterDoc<S, T>> {
@@ -140,7 +140,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
         input: {
           model: T;
           update: AdapterUpdate<S, T>;
-          where?: AdapterWhere[];
+          where?: Array<AdapterWhere>;
         };
         onUpdateHandle?: string;
       }
@@ -154,7 +154,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
         input: {
           model: T;
           update: AdapterUpdate<S, T>;
-          where?: AdapterWhere[];
+          where?: Array<AdapterWhere>;
         };
         paginationOpts: PaginationOptions;
         onUpdateHandle?: string;
@@ -166,7 +166,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
     deleteOne<T extends SchemaTables<S>>(
       ctx: MutationRunner,
       args: {
-        input: { model: T; where?: AdapterWhere[] };
+        input: { model: T; where?: Array<AdapterWhere> };
         onDeleteHandle?: string;
       }
     ): Promise<AdapterDoc<S, T> | undefined> {
@@ -178,7 +178,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
     deleteMany<T extends SchemaTables<S>>(
       ctx: MutationRunner,
       args: {
-        input: { model: T; where?: AdapterWhere[] };
+        input: { model: T; where?: Array<AdapterWhere> };
         paginationOpts: PaginationOptions;
         onDeleteHandle?: string;
       }
