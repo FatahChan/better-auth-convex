@@ -1,17 +1,19 @@
+import { makeFunctionReference } from "convex/server";
 import { expectTypeOf, it } from "vitest";
-import { createTypedAdapter } from "./create-typed-adapter.js";
+import { createTypedAdapter } from './create-typed-adapter.js';
+import type { AdapterFunctions } from './create-typed-adapter.js';
 import type { Doc } from "../component/_generated/dataModel.js";
 import schema from "../component/schema.js";
 
 const fns = {
-  findOne: "adapter:findOne",
-  findMany: "adapter:findMany",
-  create: "adapter:create",
-  updateOne: "adapter:updateOne",
-  updateMany: "adapter:updateMany",
-  deleteOne: "adapter:deleteOne",
-  deleteMany: "adapter:deleteMany",
-} as Parameters<typeof createTypedAdapter>[1];
+  findOne: makeFunctionReference<"query">("adapter:findOne"),
+  findMany: makeFunctionReference<"query">("adapter:findMany"),
+  create: makeFunctionReference<"mutation">("adapter:create"),
+  updateOne: makeFunctionReference<"mutation">("adapter:updateOne"),
+  updateMany: makeFunctionReference<"mutation">("adapter:updateMany"),
+  deleteOne: makeFunctionReference<"mutation">("adapter:deleteOne"),
+  deleteMany: makeFunctionReference<"mutation">("adapter:deleteMany"),
+} satisfies AdapterFunctions;
 
 const adapter = createTypedAdapter(schema, fns);
 
@@ -31,11 +33,11 @@ it("infers doc type from model on findOne", async () => {
   });
   expectTypeOf(user).toEqualTypeOf<Doc<"user"> | null>();
 
-  const member = await adapter.findOne(queryCtx, {
-    model: "member",
+  const session = await adapter.findOne(queryCtx, {
+    model: "session",
     where: [{ field: "userId", value: "u1" }],
   });
-  expectTypeOf(member).toEqualTypeOf<Doc<"member"> | null>();
+  expectTypeOf(session).toEqualTypeOf<Doc<"session"> | null>();
 });
 
 it("infers doc type from model on create", async () => {
@@ -56,8 +58,8 @@ it("infers doc type from model on create", async () => {
 
 it("infers page doc type from model on findMany", async () => {
   const result = await adapter.findMany(queryCtx, {
-    model: "invitation",
+    model: "account",
     paginationOpts: { cursor: null, numItems: 10 },
   });
-  expectTypeOf(result.page).toEqualTypeOf<Array<Doc<"invitation">>>();
+  expectTypeOf(result.page).toEqualTypeOf<Array<Doc<"account">>>();
 });
