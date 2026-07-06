@@ -14,11 +14,8 @@ import type {
 import { ConvexError, v } from "convex/values";
 import type { Infer } from "convex/values";
 import { convexAdapter } from "./adapter.js";
-import {
-  createTypedAdapter,
-  type AdapterFunctions,
-  type TypedAdapter,
-} from "./create-typed-adapter.js";
+import { createTypedAdapter } from "./create-typed-adapter.js";
+import type { AdapterFunctions, TypedAdapter } from "./create-typed-adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import defaultSchema from "../component/schema.js";
 import type { CreateAuth, GenericCtx } from "./index.js";
