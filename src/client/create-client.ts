@@ -141,10 +141,10 @@ export const createClient = <
   )
 ) => {
   const adapterSchema = config?.local?.schema ?? defaultSchema;
-  const typedAdapter: TypedAdapter<Schema> = createTypedAdapter(
+  const typedAdapter = createTypedAdapter(
     adapterSchema,
     component.adapter as AdapterFunctions
-  );
+  ) as TypedAdapter<Schema>;
 
   const safeGetAuthUser = async (ctx: GenericCtx<DataModel>) => {
     const identity = await ctx.auth.getUserIdentity();
