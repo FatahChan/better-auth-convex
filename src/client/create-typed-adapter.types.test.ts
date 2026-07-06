@@ -63,3 +63,22 @@ it("infers page doc type from model on findMany", async () => {
   });
   expectTypeOf(result.page).toEqualTypeOf<Array<Doc<"account">>>();
 });
+
+it("narrows where field and value from model", () => {
+  adapter.findOne(queryCtx, {
+    model: "user",
+    where: [{ field: "email", value: "a@b.c" }],
+  });
+
+  adapter.findOne(queryCtx, {
+    model: "user",
+    // @ts-expect-error token is not a user field
+    where: [{ field: "token", value: "x" }],
+  });
+
+  adapter.findOne(queryCtx, {
+    model: "session",
+    // @ts-expect-error expiresAt expects a number
+    where: [{ field: "expiresAt", value: "not-a-number" }],
+  });
+});

@@ -10,7 +10,38 @@ import type {
 import type { Infer } from "convex/values";
 import type { adapterWhereValidator } from "./adapter-utils.js";
 
-export type AdapterWhere = Infer<typeof adapterWhereValidator>;
+type AdapterWhereBase = Infer<typeof adapterWhereValidator>;
+
+type AdapterWhereOperator = NonNullable<AdapterWhereBase["operator"]>;
+
+type AdapterWhereValue<V> =
+  | Exclude<V, undefined>
+  | (Exclude<V, undefined> extends string ? string | Array<string> : never)
+  | (Exclude<V, undefined> extends number ? Array<number> : never)
+  | null;
+
+type ModelAdapterWhere<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+> = {
+  [F in keyof AdapterDoc<S, T>]: {
+    field: F;
+    operator?: AdapterWhereOperator;
+    value: AdapterWhereValue<AdapterDoc<S, T>[F]>;
+    connector?: AdapterWhereBase["connector"];
+    mode?: AdapterWhereBase["mode"];
+  };
+}[keyof AdapterDoc<S, T>];
+
+/** Where-clause for a single table; `field` and `value` narrow with `T`. */
+export type AdapterWhere<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+> = string extends SchemaTables<S>
+  ? AdapterWhereBase
+  : string extends keyof AdapterDoc<S, T>
+    ? AdapterWhereBase
+    : ModelAdapterWhere<S, T>;
 
 /** Function references for the adapter API created by {@link createApi}. */
 export type AdapterFunctions = {
@@ -97,7 +128,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
       ctx: QueryRunner,
       args: {
         model: T;
-        where?: Array<AdapterWhere>;
+        where?: Array<AdapterWhere<S, T>>;
         select?: Array<string>;
         join?: unknown;
       }
@@ -109,7 +140,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
       ctx: QueryRunner,
       args: {
         model: T;
-        where?: Array<AdapterWhere>;
+        where?: Array<AdapterWhere<S, T>>;
         select?: Array<string>;
         limit?: number;
         sortBy?: SortBy;
@@ -140,7 +171,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
         input: {
           model: T;
           update: AdapterUpdate<S, T>;
-          where?: Array<AdapterWhere>;
+          where?: Array<AdapterWhere<S, T>>;
         };
         onUpdateHandle?: string;
       }
@@ -154,7 +185,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
         input: {
           model: T;
           update: AdapterUpdate<S, T>;
-          where?: Array<AdapterWhere>;
+          where?: Array<AdapterWhere<S, T>>;
         };
         paginationOpts: PaginationOptions;
         onUpdateHandle?: string;
@@ -166,7 +197,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
     deleteOne<T extends SchemaTables<S>>(
       ctx: MutationRunner,
       args: {
-        input: { model: T; where?: Array<AdapterWhere> };
+        input: { model: T; where?: Array<AdapterWhere<S, T>> };
         onDeleteHandle?: string;
       }
     ): Promise<AdapterDoc<S, T> | undefined> {
@@ -178,7 +209,7 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
     deleteMany<T extends SchemaTables<S>>(
       ctx: MutationRunner,
       args: {
-        input: { model: T; where?: Array<AdapterWhere> };
+        input: { model: T; where?: Array<AdapterWhere<S, T>> };
         paginationOpts: PaginationOptions;
         onDeleteHandle?: string;
       }

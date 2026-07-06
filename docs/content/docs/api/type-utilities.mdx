@@ -66,7 +66,7 @@ The adapter exposes the same operations as
 | --- | --- |
 | `TypedAdapter<S>` | Return type of `createTypedAdapter` for schema `S` |
 | `AdapterFunctions` | Function references passed as the second argument |
-| `AdapterWhere` | Where-clause shape used by read and write methods |
+| `AdapterWhere<S, T>` | Where-clause for table `T` in schema `S`; `field` and `value` narrow with the model |
 | `SortBy` | `{ direction: "asc" \| "desc"; field: string }` for `findMany` |
 | `BatchResult` | Paginated batch result from `updateMany` and `deleteMany` |
 

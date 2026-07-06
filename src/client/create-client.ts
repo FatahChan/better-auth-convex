@@ -14,11 +14,8 @@ import type {
 import { ConvexError, v } from "convex/values";
 import type { Infer } from "convex/values";
 import { convexAdapter } from "./adapter.js";
-import {
-  createTypedAdapter,
-  type AdapterFunctions,
-  type TypedAdapter,
-} from "./create-typed-adapter.js";
+import { createTypedAdapter } from "./create-typed-adapter.js";
+import type { AdapterFunctions, TypedAdapter } from "./create-typed-adapter.js";
 import { corsRouter } from "convex-helpers/server/cors";
 import defaultSchema from "../component/schema.js";
 import type { CreateAuth, GenericCtx } from "./index.js";
@@ -144,10 +141,10 @@ export const createClient = <
   )
 ) => {
   const adapterSchema = config?.local?.schema ?? defaultSchema;
-  const typedAdapter: TypedAdapter<Schema> = createTypedAdapter(
+  const typedAdapter = createTypedAdapter(
     adapterSchema,
     component.adapter as AdapterFunctions
-  );
+  ) as TypedAdapter<Schema>;
 
   const safeGetAuthUser = async (ctx: GenericCtx<DataModel>) => {
     const identity = await ctx.auth.getUserIdentity();
