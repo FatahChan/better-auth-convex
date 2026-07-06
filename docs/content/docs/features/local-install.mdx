@@ -253,8 +253,9 @@ custom indexes aren't overwritten when the schema is regenerated.
 
 When you read or write Better Auth tables from your app (outside the component),
 use `authComponent.typedAdapter`. It wraps the adapter the same way as
-`ctx.runQuery(components.betterAuth.adapter.findOne, …)` but infers the document
-type from the `model` you pass.
+`ctx.runQuery(components.betterAuth.adapter.findOne, …)` but infers document
+types from `model`, and type-checks `where`, `select`, and `sortBy` against that
+table.
 
 **1. Pass your local schema to `createClient`** (from the install step above):
 

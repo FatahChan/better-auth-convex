@@ -29,8 +29,9 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 
 Typed wrappers around `components.betterAuth.adapter` for use in your Convex
 functions. Prefer this over calling
-`ctx.runQuery(components.betterAuth.adapter.findOne, …)` directly — the
-`model` argument narrows the return type.
+`ctx.runQuery(components.betterAuth.adapter.findOne, …)` directly — `model`
+narrows return types, and `where`, `select`, and `sortBy` are checked against
+that table's fields.
 
 With [local install](/features/local-install), pass your schema in `createClient`
 config. See [Type Utilities](/api/type-utilities#typedadapter-on-the-component-client).
