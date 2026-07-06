@@ -82,3 +82,39 @@ it("narrows where field and value from model", () => {
     where: [{ field: "expiresAt", value: "not-a-number" }],
   });
 });
+
+it("narrows findOne and findMany return type from select", async () => {
+  const user = await adapter.findOne(queryCtx, {
+    model: "user",
+    select: ["email", "name"],
+  });
+  expectTypeOf(user).toEqualTypeOf<Pick<Doc<"user">, "email" | "name"> | null>();
+
+  const users = await adapter.findMany(queryCtx, {
+    model: "user",
+    select: ["email"],
+    paginationOpts: { cursor: null, numItems: 10 },
+  });
+  expectTypeOf(users.page).toEqualTypeOf<Array<Pick<Doc<"user">, "email">>>();
+
+  adapter.findOne(queryCtx, {
+    model: "user",
+    // @ts-expect-error token is not a user field
+    select: ["token"],
+  });
+});
+
+it("narrows sortBy field from model on findMany", () => {
+  adapter.findMany(queryCtx, {
+    model: "user",
+    sortBy: { field: "email", direction: "asc" },
+    paginationOpts: { cursor: null, numItems: 10 },
+  });
+
+  adapter.findMany(queryCtx, {
+    model: "user",
+    // @ts-expect-error token is not a user field
+    sortBy: { field: "token", direction: "desc" },
+    paginationOpts: { cursor: null, numItems: 10 },
+  });
+});

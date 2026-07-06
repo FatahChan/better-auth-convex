@@ -86,7 +86,58 @@ type MutationRunner = {
   ) => Promise<M["_returnType"]>;
 };
 
-export type SortBy = { direction: "asc" | "desc"; field: string };
+type AdapterDocKey<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+> = string extends keyof AdapterDoc<S, T> ? string : keyof AdapterDoc<S, T>;
+
+type AdapterSelectResult<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+  Sel extends ReadonlyArray<AdapterDocKey<S, T>> | undefined,
+> = Sel extends ReadonlyArray<AdapterDocKey<S, T>>
+  ? string extends AdapterDocKey<S, T>
+    ? Partial<AdapterDoc<S, T>>
+    : Pick<AdapterDoc<S, T>, Sel[number] & keyof AdapterDoc<S, T>>
+  : AdapterDoc<S, T>;
+
+type FindOneArgs<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+  Sel extends ReadonlyArray<AdapterDocKey<S, T>> | undefined,
+> = {
+  model: T;
+  where?: Array<AdapterWhere<S, T>>;
+  select?: Sel;
+  join?: unknown;
+};
+
+type FindManyArgs<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+  Sel extends ReadonlyArray<AdapterDocKey<S, T>> | undefined,
+> = {
+  model: T;
+  where?: Array<AdapterWhere<S, T>>;
+  select?: Sel;
+  limit?: number;
+  sortBy?: SortBy<S, T>;
+  offset?: number;
+  join?: unknown;
+  paginationOpts: PaginationOptions;
+};
+
+type SortByBase = { direction: "asc" | "desc"; field: string };
+
+/** Sort option for `findMany`; `field` narrows with table `T`. */
+export type SortBy<
+  S extends SchemaDefinition<any, boolean>,
+  T extends SchemaTables<S>,
+> = string extends SchemaTables<S>
+  ? SortByBase
+  : string extends keyof AdapterDoc<S, T>
+    ? SortByBase
+    : { direction: "asc" | "desc"; field: keyof AdapterDoc<S, T> };
 
 export type BatchResult = {
   count: number;
@@ -115,8 +166,9 @@ export type BatchResult = {
  * const user = await adapter.findOne(ctx, {
  *   model: "user",
  *   where: [{ field: "email", value: email }],
+ *   select: ["email", "name"],
  * });
- * // user: Doc<"user"> | null
+ * // user: Pick<Doc<"user">, "email" | "name"> | null
  * ```
  */
 export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
@@ -124,33 +176,27 @@ export function createTypedAdapter<S extends SchemaDefinition<any, boolean>>(
   fns: AdapterFunctions
 ) {
   return {
-    findOne<T extends SchemaTables<S>>(
+    findOne<
+      T extends SchemaTables<S>,
+      const Sel extends ReadonlyArray<AdapterDocKey<S, T>> | undefined = undefined,
+    >(
       ctx: QueryRunner,
-      args: {
-        model: T;
-        where?: Array<AdapterWhere<S, T>>;
-        select?: Array<string>;
-        join?: unknown;
-      }
-    ): Promise<AdapterDoc<S, T> | null> {
-      return ctx.runQuery(fns.findOne, args) as Promise<AdapterDoc<S, T> | null>;
+      args: FindOneArgs<S, T, Sel>
+    ): Promise<AdapterSelectResult<S, T, Sel> | null> {
+      return ctx.runQuery(fns.findOne, args) as Promise<
+        AdapterSelectResult<S, T, Sel> | null
+      >;
     },
 
-    findMany<T extends SchemaTables<S>>(
+    findMany<
+      T extends SchemaTables<S>,
+      const Sel extends ReadonlyArray<AdapterDocKey<S, T>> | undefined = undefined,
+    >(
       ctx: QueryRunner,
-      args: {
-        model: T;
-        where?: Array<AdapterWhere<S, T>>;
-        select?: Array<string>;
-        limit?: number;
-        sortBy?: SortBy;
-        offset?: number;
-        join?: unknown;
-        paginationOpts: PaginationOptions;
-      }
-    ): Promise<PaginationResult<AdapterDoc<S, T>>> {
+      args: FindManyArgs<S, T, Sel>
+    ): Promise<PaginationResult<AdapterSelectResult<S, T, Sel>>> {
       return ctx.runQuery(fns.findMany, args) as Promise<
-        PaginationResult<AdapterDoc<S, T>>
+        PaginationResult<AdapterSelectResult<S, T, Sel>>
       >;
     },
 
